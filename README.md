@@ -11,6 +11,54 @@ Then the app creates a picture with many colored animal shapes. The person must 
 
 ## How to Open the App
 
+There are three easy ways to use this app.
+
+## Option 1: Download It From GitHub
+
+Use this option if you are looking at the project on GitHub.com.
+
+1. Open the project page on GitHub.
+2. Click the green `Code` button.
+3. Click `Download ZIP`.
+4. Wait for the ZIP file to download.
+5. Open the ZIP file.
+6. Click `Extract All`.
+7. Open the extracted folder.
+8. Find the file named `index.html`.
+9. Double-click `index.html`.
+10. The app will open in your web browser.
+
+You do not need to install anything. You do not need an account. You do not need to write code.
+
+## Option 2: Use It as a Website With GitHub Pages
+
+GitHub does not run the app from the normal code page. It only shows the files.
+
+To use the app directly from GitHub as a website, the project owner needs to turn on GitHub Pages.
+
+### How the Project Owner Can Turn On GitHub Pages
+
+1. Open the project on GitHub.com.
+2. Click `Settings`.
+3. Click `Pages` in the left menu.
+4. Under `Build and deployment`, find `Source`.
+5. Choose `Deploy from a branch`.
+6. Under `Branch`, choose `main` or `master`.
+7. Choose the folder named `/(root)`.
+8. Click `Save`.
+9. Wait a minute or two.
+10. GitHub will show a website link.
+
+Open that link to use the app in a browser.
+
+The link will usually look something like this:
+
+`https://your-username.github.io/your-repository-name/`
+
+## Option 3: Open It From This Folder
+
+Use this option if the project is already saved on your computer.
+
 1. Open the project folder on your computer.
 2. Find the file named `index.html`.
 3. Double-click `index.html`.
