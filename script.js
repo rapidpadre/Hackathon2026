@@ -9,7 +9,6 @@ const overlayTitle = document.querySelector("#overlay-title");
 const overlayDetail = document.querySelector("#overlay-detail");
 const resultMessage = document.querySelector("#result-message");
 const challengeText = document.querySelector("#challenge-text");
-const attemptText = document.querySelector("#attempt-text");
 const timerText = document.querySelector("#timer-text");
 const movementText = document.querySelector("#movement-text");
 const resetButton = document.querySelector("#reset-button");
@@ -52,7 +51,7 @@ const palette = {
   pink: "#ec4899",
   teal: "#0d9488",
   gold: "#b7791f",
-  black: "#111827",
+  black: "#f8fafc",
   white: "#f8fafc",
   gray: "#64748b",
   grey: "#64748b",
@@ -60,10 +59,9 @@ const palette = {
 };
 
 const decoyColors = Object.entries(palette).filter(([name]) => name !== "white");
-const randomColorNames = Object.keys(palette).filter((name) => !["white", "grey"].includes(name));
+const randomColorNames = Object.keys(palette).filter((name) => name !== "grey");
 const animalNames = animalCatalog;
 let challenge = null;
-let attempts = 0;
 let isResetting = false;
 let isAuthenticated = false;
 let resetTimer = null;
@@ -299,6 +297,8 @@ function stopCountdown() {
 function startCountdown() {
   stopCountdown();
   secondsRemaining = challengeDuration;
+  setControlsLocked(true);
+  resetButton.disabled = true;
   setTimerText();
 
   countdownTimer = setInterval(() => {
@@ -311,6 +311,7 @@ function startCountdown() {
       stopMovementTracking();
       isResetting = true;
       setControlsLocked(true);
+      resetButton.disabled = false;
       setOverlay("denied");
       overlayDetail.textContent = `${movement.label} movement score: ${movement.score}%. Reset to try again.`;
       setResult(`Time expired. ${movementResultText()} Reset to try again.`, "error");
@@ -320,14 +321,14 @@ function startCountdown() {
 
 function drawBackground() {
   const gradient = ctx.createLinearGradient(0, 0, logicalCanvas.width, logicalCanvas.height);
-  gradient.addColorStop(0, "#ffeff7");
-  gradient.addColorStop(0.4, "#e9fbff");
-  gradient.addColorStop(0.72, "#fff8d7");
-  gradient.addColorStop(1, "#f2e9ff");
+  gradient.addColorStop(0, "#03111a");
+  gradient.addColorStop(0.38, "#062737");
+  gradient.addColorStop(0.72, "#071532");
+  gradient.addColorStop(1, "#180a2f");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, logicalCanvas.width, logicalCanvas.height);
 
-  ctx.strokeStyle = "rgba(23, 33, 38, 0.09)";
+  ctx.strokeStyle = "rgba(32, 247, 196, 0.12)";
   ctx.lineWidth = 1;
   for (let x = 32; x < logicalCanvas.width; x += 54) {
     ctx.beginPath();
@@ -337,7 +338,7 @@ function drawBackground() {
   }
 
   for (let i = 0; i < 18; i += 1) {
-    ctx.fillStyle = i % 2 ? "rgba(236, 72, 153, 0.12)" : "rgba(20, 184, 166, 0.14)";
+    ctx.fillStyle = i % 3 === 0 ? "rgba(156, 255, 26, 0.14)" : i % 3 === 1 ? "rgba(17, 217, 232, 0.14)" : "rgba(139, 92, 246, 0.13)";
     ctx.beginPath();
     ctx.arc((i * 151) % logicalCanvas.width, 42 + ((i * 83) % (logicalCanvas.height - 84)), 12 + (i % 4) * 4, 0, Math.PI * 2);
     ctx.fill();
@@ -877,10 +878,10 @@ function generateChallenge(colorName, animalName) {
   clearTimeout(resetTimer);
   stopCountdown();
   setControlsLocked(false);
+  resetButton.disabled = true;
   setOverlay(null);
   isResetting = false;
   isAuthenticated = false;
-  attempts = 0;
   lowConfidenceAttempts = 0;
   challenge = {
     colorName: normalize(colorName),
@@ -890,7 +891,6 @@ function generateChallenge(colorName, animalName) {
 
   emptyState.classList.add("is-hidden");
   challengeText.textContent = `Find your ${challenge.colorName} ${challenge.animalName}.`;
-  attemptText.textContent = "Attempts: 0";
   setResult("Click the matching item in the generated image.");
   renderChallenge();
   resetMovementTracking();
@@ -929,8 +929,6 @@ canvas.addEventListener("click", (event) => {
   if (!challenge || isResetting || isAuthenticated) return;
 
   recordMovement(event);
-  attempts += 1;
-  attemptText.textContent = `Attempts: ${attempts}`;
 
   const point = canvasPoint(event);
   const clicked = challenge.tokens.find((token) => hitTest(point, token));
@@ -945,6 +943,7 @@ canvas.addEventListener("click", (event) => {
         stopCountdown();
         isResetting = true;
         setControlsLocked(true);
+        resetButton.disabled = false;
         setOverlay("denied");
         overlayDetail.textContent = `${movement.label} movement score: ${movement.score}%. Reset to try again.`;
         setResult(`Access denied. Movement score stayed below ${humanMovementThreshold}%. Reset to try again.`, "error");
@@ -965,6 +964,7 @@ canvas.addEventListener("click", (event) => {
     stopCountdown();
     isAuthenticated = true;
     setControlsLocked(true);
+    resetButton.disabled = false;
     setOverlay("success");
     overlayDetail.textContent = `${movement.label} movement score: ${movement.score}%.`;
     setResult(`Authenticated. ${movementResultText()}`, "success");
@@ -972,6 +972,7 @@ canvas.addEventListener("click", (event) => {
     stopCountdown();
     isResetting = true;
     setControlsLocked(true);
+    resetButton.disabled = false;
     setOverlay("denied");
     overlayDetail.textContent = "Incorrect animal. Reset to try again.";
     setResult("Access denied. Incorrect animal. Reset to try again.", "error");
@@ -981,13 +982,14 @@ canvas.addEventListener("click", (event) => {
 canvas.addEventListener("pointermove", recordMovement);
 
 resetButton.addEventListener("click", () => {
+  if (!challenge) return;
+
   clearTimeout(resetTimer);
   stopCountdown();
   stopMovementTracking();
   isResetting = false;
   isAuthenticated = false;
   challenge = null;
-  attempts = 0;
   movementSamples = [];
   lastMovementScore = null;
   lowConfidenceAttempts = 0;
@@ -996,8 +998,8 @@ resetButton.addEventListener("click", () => {
   setOverlay(null);
   form.reset();
   setControlsLocked(false);
+  resetButton.disabled = true;
   challengeText.textContent = "Enter your details to begin.";
-  attemptText.textContent = "Attempts: 0";
   setTimerText();
   setMovementText("Movement: --");
   setResult("Waiting for a challenge.");
@@ -1011,3 +1013,4 @@ window.addEventListener("resize", () => {
 resizeCanvasForDisplay();
 setTimerText();
 setMovementText("Movement: --");
+resetButton.disabled = true;
