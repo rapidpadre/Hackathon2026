@@ -49,7 +49,7 @@ const palette = {
   blue: "#2563eb",
   purple: "#7c3aed",
   pink: "#ec4899",
-  teal: "#0d9488",
+  teal: "#0891d1",
   gold: "#b7791f",
   black: "#f8fafc",
   white: "#f8fafc",
@@ -151,11 +151,11 @@ function resetMovementTracking() {
   setMovementText("Movement: tracking...");
 }
 
-function retryMovementTracking(movement) {
+function retryMovementTracking() {
   movementSamples = [];
   movementStartedAt = performance.now();
   lastMovementScore = null;
-  setMovementText(`Movement: ${movement.score}% - select again`);
+  setMovementText("Movement: try again");
 }
 
 function regenerateChallengeImage() {
@@ -367,7 +367,11 @@ function drawToken(token) {
 
   ctx.shadowColor = "transparent";
 
-  ctx.fillStyle = "#050505";
+  ctx.fillStyle = "#d8fff8";
+  ctx.strokeStyle = "rgba(1, 8, 13, 0.92)";
+  ctx.lineWidth = Math.max(4, token.size * 0.045);
+  ctx.shadowColor = "rgba(17, 217, 232, 0.28)";
+  ctx.shadowBlur = 10;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.font = `900 ${Math.max(14, token.size * 0.14)}px Inter, Arial, sans-serif`;
@@ -817,7 +821,11 @@ function wrapText(text, x, y, maxWidth, lineHeight) {
   lines.push(line);
 
   const startY = y - ((lines.length - 1) * lineHeight) / 2;
-  lines.forEach((lineText, index) => ctx.fillText(lineText, x, startY + index * lineHeight));
+  lines.forEach((lineText, index) => {
+    const lineY = startY + index * lineHeight;
+    ctx.strokeText(lineText, x, lineY);
+    ctx.fillText(lineText, x, lineY);
+  });
 }
 
 function buildTokens(colorName, animalName, excludedTargetSlot = null) {
@@ -951,11 +959,11 @@ canvas.addEventListener("click", (event) => {
       }
 
       regenerateChallengeImage();
-      retryMovementTracking(movement);
+      retryMovementTracking();
       setOverlay(null);
       challengeText.textContent = `Find your ${challenge.colorName} ${challenge.animalName}.`;
       setResult(
-        `Correct animal, but movement score was ${movement.score}%. The image regenerated. Select your ${challenge.animalName} again.`,
+        `Correct animal, but the movement check was too low. The image regenerated. Select your ${challenge.animalName} again.`,
         "error"
       );
       return;
